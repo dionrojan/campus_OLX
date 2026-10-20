@@ -29,15 +29,18 @@ DSA_OOPS_project/
 
 ## 🚀 How to Run
 
-1. **Compile:**
-   ```bash
-   ./compile.sh
-   ```
+### On Linux / macOS:
+```bash
+./compile.sh
+./run.sh
+```
 
-2. **Run:**
-   ```bash
-   ./run.sh
-   ```
+### On Windows (Command Prompt or PowerShell):
+```cmd
+compile.bat
+run.bat
+```
+*(Or simply double-click `run.bat` in Windows File Explorer!)*
 
 ---
 
