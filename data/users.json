@@ -1,0 +1,38 @@
+[
+  {
+    "postedItemIds": [
+      "ITM-1001",
+      "ITM-1002"
+    ],
+    "purchasedItemIds": [],
+    "id": "USR-101",
+    "name": "Rohan Sharma",
+    "rollNumber": "21BCE1001",
+    "hostel": "Block-A, Room 204",
+    "contactNumber": "9876543210",
+    "password": "pass123"
+  },
+  {
+    "postedItemIds": [
+      "ITM-1003",
+      "ITM-1004"
+    ],
+    "purchasedItemIds": [],
+    "id": "USR-102",
+    "name": "Priya Patel",
+    "rollNumber": "22BCS2045",
+    "hostel": "Block-D, Room 112",
+    "contactNumber": "9123456780",
+    "password": "pass123"
+  },
+  {
+    "postedItemIds": [],
+    "purchasedItemIds": [],
+    "id": "USR-103",
+    "name": "dion",
+    "rollNumber": "7",
+    "hostel": "7",
+    "contactNumber": "8921",
+    "password": "686518"
+  }
+]

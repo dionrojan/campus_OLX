@@ -1,0 +1,26 @@
+# ==============================================================================
+# Campus OLX - .gitignore
+# ==============================================================================
+
+# Compiled Java Bytecode
+bin/
+*.class
+
+# IDE and Editor configurations
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# OS-specific temporary files
+.DS_Store
+Thumbs.db
+
+# Log and crash files
+*.log
+hs_err_pid*
+
+# Note: The 'lib/' directory containing gson.jar and 'data/items.json' 
+# are intentionally NOT ignored so your teammates have working libraries and starter data.

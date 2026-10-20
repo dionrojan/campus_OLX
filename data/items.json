@@ -1,0 +1,82 @@
+[
+  {
+    "id": 101,
+    "title": "Introduction to Algorithms (CLRS)",
+    "category": "Book",
+    "price": 650.0,
+    "description": "3rd edition in great condition, essential for DSA courses.",
+    "sellerName": "Rohan Sharma",
+    "sellerPhone": "9876543210",
+    "isSold": false
+  },
+  {
+    "id": 102,
+    "title": "Casio fx-991EX Scientific Calculator",
+    "category": "Electronics",
+    "price": 850.0,
+    "description": "High-res display, allowed in college semester exams.",
+    "sellerName": "Rohan Sharma",
+    "sellerPhone": "9876543210",
+    "isSold": false
+  },
+  {
+    "id": 103,
+    "title": "Hero Sprint 21-Speed Mountain Bicycle",
+    "category": "Cycle",
+    "price": 3200.0,
+    "description": "Ideal for campus commuting, newly serviced with dual reflectors.",
+    "sellerName": "Priya Patel",
+    "sellerPhone": "9123456780",
+    "isSold": false
+  },
+  {
+    "id": 104,
+    "title": "Engineering Mechanics (Statics \u0026 Dynamics)",
+    "category": "Book",
+    "price": 250.0,
+    "description": "First year textbook, clean pages with formula bookmark.",
+    "sellerName": "Priya Patel",
+    "sellerPhone": "9123456780",
+    "isSold": false
+  },
+  {
+    "id": 105,
+    "title": "Prestige 1.5L Electric Kettle",
+    "category": "Hostel",
+    "price": 500.0,
+    "description": "Hostel essential for late-night ramen and coffee.",
+    "sellerName": "Priya Patel",
+    "sellerPhone": "9123456780",
+    "isSold": false
+  },
+  {
+    "id": 106,
+    "title": "Drafting Sheet Holder",
+    "category": "General",
+    "price": 150.0,
+    "description": "Used in ED lab",
+    "sellerName": "Aman",
+    "sellerPhone": "9112233445",
+    "isSold": true
+  },
+  {
+    "id": 107,
+    "title": "acer laptop",
+    "category": "Electronics",
+    "price": 50000.0,
+    "description": "good condition",
+    "sellerName": "dion",
+    "sellerPhone": "8921",
+    "isSold": true
+  },
+  {
+    "id": 108,
+    "title": "calculator",
+    "category": "Enectronics",
+    "price": 800.0,
+    "description": "well maintained",
+    "sellerName": "dion",
+    "sellerPhone": "8921",
+    "isSold": true
+  }
+]
