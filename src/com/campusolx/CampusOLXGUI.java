@@ -59,6 +59,10 @@ public class CampusOLXGUI extends JFrame {
         tabbedPane.setFont(new Font("Arial", Font.BOLD, 13));
         tabbedPane.addTab("🛒 Buyer Mode (Browse, Search & Buy)", createBuyerPanel());
         tabbedPane.addTab("🏷️ Seller Mode (Post & Manage Listings)", createSellerPanel());
+        tabbedPane.addChangeListener(e -> {
+            int selected = tabbedPane.getSelectedIndex();
+            lblStatus.setText("Switched to " + (selected == 0 ? "Buyer Mode" : "Seller Mode"));
+        });
         add(tabbedPane, BorderLayout.CENTER);
 
         // 3. Status Bar at the bottom
@@ -73,33 +77,17 @@ public class CampusOLXGUI extends JFrame {
     }
 
     // -------------------------------------------------------------------------
-    // HEADER: Title & Quick Tab Switcher Button
+    // HEADER: Clean Title Header
     // -------------------------------------------------------------------------
     private JPanel createHeaderPanel() {
-        JPanel headerPanel = new JPanel(new BorderLayout(10, 5));
-        headerPanel.setBorder(BorderFactory.createEmptyBorder(10, 15, 5, 15));
+        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 10));
         headerPanel.setBackground(new Color(240, 245, 250));
 
-        JLabel lblTitle = new JLabel("🎓 CAMPUS OLX", JLabel.LEFT);
+        JLabel lblTitle = new JLabel("🎓 CAMPUS OLX — College Marketplace");
         lblTitle.setFont(new Font("Arial", Font.BOLD, 20));
         lblTitle.setForeground(new Color(20, 60, 120));
 
-        // Right side: Quick Role Switch Button
-        JPanel roleSwitchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
-        roleSwitchPanel.setOpaque(false);
-
-        JButton btnSwitchRole = new JButton("🔄 Switch to " + (tabbedPane == null ? "Seller Mode" : "Other Mode"));
-        btnSwitchRole.setFont(new Font("Arial", Font.PLAIN, 12));
-        btnSwitchRole.addActionListener(e -> {
-            int current = tabbedPane.getSelectedIndex();
-            tabbedPane.setSelectedIndex(current == 0 ? 1 : 0);
-            lblStatus.setText("Switched to: " + tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()));
-        });
-
-        roleSwitchPanel.add(btnSwitchRole);
-
-        headerPanel.add(lblTitle, BorderLayout.WEST);
-        headerPanel.add(roleSwitchPanel, BorderLayout.EAST);
+        headerPanel.add(lblTitle);
         return headerPanel;
     }
 
