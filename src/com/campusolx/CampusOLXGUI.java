@@ -6,322 +6,449 @@ import java.awt.*;
 import java.util.ArrayList;
 
 /**
- * Basic Graphical User Interface (GUI) built with Java Swing.
+ * Enhanced Graphical User Interface (GUI) with distinct Buyer and Seller modes.
  *
- * OOP Principles Demonstrated:
- * 1. Inheritance  : Extends JFrame (inherits all desktop window properties).
- * 2. Encapsulation: All GUI components, data lists, and helpers are private.
- * 3. Polymorphism : Event listeners (ActionListener) responding to button clicks.
+ * Demonstrates:
+ * 1. Inheritance  : Extends JFrame.
+ * 2. Encapsulation: Private UI components and methods.
+ * 3. Polymorphism : Buyer and Seller displayInfo() profiles triggered via GUI buttons.
+ * 4. JTabbedPane  : Clean switching between Buyer and Seller roles.
  */
 public class CampusOLXGUI extends JFrame {
 
-    // Private UI Components (Encapsulation)
-    private JTable itemTable;
-    private DefaultTableModel tableModel;
+    // In-memory data list
+    private ArrayList<Item> items;
+
+    // Buyer Components
+    private JTable buyerTable;
+    private DefaultTableModel buyerTableModel;
     private JTextField txtBudget;
+    private Buyer currentBuyer;
+
+    // Seller Components
+    private JTable sellerTable;
+    private DefaultTableModel sellerTableModel;
+    private JTextField txtTitle, txtCategory, txtPrice, txtDesc, txtSellerName, txtSellerPhone;
+    private Seller currentSeller;
+
+    // General Components
+    private JTabbedPane tabbedPane;
     private JLabel lblStatus;
 
-    // In-memory data list
-    private ArrayList<Item> currentItems;
-
     public CampusOLXGUI() {
-        // Load initial items from JSON file
-        currentItems = DataManager.loadItems();
+        // Load initial data from items.json
+        items = DataManager.loadItems();
 
-        // Initialize Window Settings
+        // Default Demo Users (Demonstrating OOP Models)
+        currentBuyer = new Buyer("Rahul", "9988776655", "Block-B", 1000.0);
+        currentSeller = new Seller("Aman", "9112233445", "Block-C");
+
+        // Window Setup
         setTitle("🎓 Campus OLX — College Marketplace (Swing GUI)");
-        setSize(900, 580);
-        setMinimumSize(new Dimension(800, 500));
+        setSize(950, 620);
+        setMinimumSize(new Dimension(850, 520));
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(null); // Center window on screen
-        setLayout(new BorderLayout(10, 10));
+        setLocationRelativeTo(null); // Center on screen
+        setLayout(new BorderLayout(5, 5));
 
-        // Build the 3 Main Panels
-        add(createTopPanel(), BorderLayout.NORTH);
-        add(createCenterTablePanel(), BorderLayout.CENTER);
-        add(createBottomActionPanel(), BorderLayout.SOUTH);
+        // 1. Header with Role Switcher
+        add(createHeaderPanel(), BorderLayout.NORTH);
 
-        // Load items into the visual table
-        displayItemsInTable(currentItems);
-    }
+        // 2. Tabbed Pane (Buyer Mode vs Seller Mode)
+        tabbedPane = new JTabbedPane();
+        tabbedPane.setFont(new Font("Arial", Font.BOLD, 13));
+        tabbedPane.addTab("🛒 Buyer Mode (Browse, Search & Buy)", createBuyerPanel());
+        tabbedPane.addTab("🏷️ Seller Mode (Post & Manage Listings)", createSellerPanel());
+        add(tabbedPane, BorderLayout.CENTER);
 
-    // -------------------------------------------------------------------------
-    // TOP PANEL: Title & DSA Controls (QuickSort + Binary Search)
-    // -------------------------------------------------------------------------
-    private JPanel createTopPanel() {
-        JPanel topPanel = new JPanel(new BorderLayout(10, 5));
-        topPanel.setBorder(BorderFactory.createEmptyBorder(10, 15, 5, 15));
-
-        // Title Header
-        JLabel lblHeader = new JLabel("🎓 Campus OLX — Marketplace", JLabel.LEFT);
-        lblHeader.setFont(new Font("Arial", Font.BOLD, 18));
-        topPanel.add(lblHeader, BorderLayout.NORTH);
-
-        // DSA Controls Panel (QuickSort & Binary Search)
-        JPanel dsaPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
-        dsaPanel.setBackground(new Color(245, 245, 245));
-        dsaPanel.setBorder(BorderFactory.createTitledBorder("DSA Algorithms"));
-
-        // QuickSort Button
-        JButton btnQuickSort = new JButton("⚡ Sort by Price (QuickSort)");
-        btnQuickSort.setBackground(new Color(220, 240, 255));
-        btnQuickSort.addActionListener(e -> handleQuickSort());
-        dsaPanel.add(btnQuickSort);
-
-        // Separator label
-        dsaPanel.add(new JLabel(" |  Budget Search: ₹"));
-
-        // Budget Input Field
-        txtBudget = new JTextField(6);
-        txtBudget.setToolTipText("Enter maximum budget in ₹");
-        dsaPanel.add(txtBudget);
-
-        // Binary Search Button
-        JButton btnBinarySearch = new JButton("🔍 Filter Budget (Binary Search)");
-        btnBinarySearch.setBackground(new Color(220, 255, 220));
-        btnBinarySearch.addActionListener(e -> handleBinarySearch());
-        dsaPanel.add(btnBinarySearch);
-
-        // Reset / Show All Button
-        JButton btnShowAll = new JButton("🔄 Show All Items");
-        btnShowAll.addActionListener(e -> {
-            currentItems = DataManager.loadItems();
-            displayItemsInTable(currentItems);
-            lblStatus.setText("Showing all " + currentItems.size() + " items.");
-        });
-        dsaPanel.add(btnShowAll);
-
-        topPanel.add(dsaPanel, BorderLayout.SOUTH);
-        return topPanel;
-    }
-
-    // -------------------------------------------------------------------------
-    // CENTER PANEL: Table displaying items
-    // -------------------------------------------------------------------------
-    private JScrollPane createCenterTablePanel() {
-        String[] columnNames = {"ID", "Category", "Title", "Price (₹)", "Description", "Seller", "Phone", "Status"};
-
-        // Non-editable table model for clean display
-        tableModel = new DefaultTableModel(columnNames, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false; // Make table cells read-only
-            }
-        };
-
-        itemTable = new JTable(tableModel);
-        itemTable.setRowHeight(24);
-        itemTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
-        itemTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-        // Configure column widths
-        itemTable.getColumnModel().getColumn(0).setPreferredWidth(50);  // ID
-        itemTable.getColumnModel().getColumn(1).setPreferredWidth(90);  // Category
-        itemTable.getColumnModel().getColumn(2).setPreferredWidth(160); // Title
-        itemTable.getColumnModel().getColumn(3).setPreferredWidth(80);  // Price
-        itemTable.getColumnModel().getColumn(4).setPreferredWidth(200); // Description
-        itemTable.getColumnModel().getColumn(5).setPreferredWidth(100); // Seller
-        itemTable.getColumnModel().getColumn(6).setPreferredWidth(100); // Phone
-        itemTable.getColumnModel().getColumn(7).setPreferredWidth(90);  // Status
-
-        JScrollPane scrollPane = new JScrollPane(itemTable);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 15));
-        return scrollPane;
-    }
-
-    // -------------------------------------------------------------------------
-    // BOTTOM PANEL: Action Buttons & Status Bar
-    // -------------------------------------------------------------------------
-    private JPanel createBottomActionPanel() {
-        JPanel bottomContainer = new JPanel(new BorderLayout(5, 5));
-        bottomContainer.setBorder(BorderFactory.createEmptyBorder(5, 15, 10, 15));
-
-        // Action Buttons Panel
-        JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
-
-        JButton btnPostItem = new JButton("➕ Post New Item");
-        btnPostItem.setFont(new Font("Arial", Font.BOLD, 12));
-        btnPostItem.addActionListener(e -> handlePostItemDialog());
-        actionsPanel.add(btnPostItem);
-
-        JButton btnBuyItem = new JButton("🛒 Buy / Mark as Sold");
-        btnBuyItem.setFont(new Font("Arial", Font.BOLD, 12));
-        btnBuyItem.addActionListener(e -> handleBuySelectedItem());
-        actionsPanel.add(btnBuyItem);
-
-        // Status Bar at the bottom
-        lblStatus = new JLabel("Welcome to Campus OLX! Select an action or search above.");
+        // 3. Status Bar at the bottom
+        lblStatus = new JLabel(" Ready. Switch between Buyer and Seller tabs anytime!");
         lblStatus.setFont(new Font("Arial", Font.ITALIC, 12));
-        lblStatus.setForeground(new Color(80, 80, 80));
+        lblStatus.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
+        add(lblStatus, BorderLayout.SOUTH);
 
-        bottomContainer.add(actionsPanel, BorderLayout.NORTH);
-        bottomContainer.add(lblStatus, BorderLayout.SOUTH);
-
-        return bottomContainer;
+        // Initial Data Load
+        refreshBuyerTable(items);
+        refreshSellerTable();
     }
 
     // -------------------------------------------------------------------------
-    // DSA EVENT HANDLERS
+    // HEADER: Title & Quick Tab Switcher Button
     // -------------------------------------------------------------------------
+    private JPanel createHeaderPanel() {
+        JPanel headerPanel = new JPanel(new BorderLayout(10, 5));
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(10, 15, 5, 15));
+        headerPanel.setBackground(new Color(240, 245, 250));
 
-    // DSA 1: QuickSort (Sort items by price low-to-high)
+        JLabel lblTitle = new JLabel("🎓 CAMPUS OLX", JLabel.LEFT);
+        lblTitle.setFont(new Font("Arial", Font.BOLD, 20));
+        lblTitle.setForeground(new Color(20, 60, 120));
+
+        // Right side: Quick Role Switch Button
+        JPanel roleSwitchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        roleSwitchPanel.setOpaque(false);
+
+        JButton btnSwitchRole = new JButton("🔄 Switch to " + (tabbedPane == null ? "Seller Mode" : "Other Mode"));
+        btnSwitchRole.setFont(new Font("Arial", Font.PLAIN, 12));
+        btnSwitchRole.addActionListener(e -> {
+            int current = tabbedPane.getSelectedIndex();
+            tabbedPane.setSelectedIndex(current == 0 ? 1 : 0);
+            lblStatus.setText("Switched to: " + tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()));
+        });
+
+        roleSwitchPanel.add(btnSwitchRole);
+
+        headerPanel.add(lblTitle, BorderLayout.WEST);
+        headerPanel.add(roleSwitchPanel, BorderLayout.EAST);
+        return headerPanel;
+    }
+
+    // =========================================================================
+    // TAB 1: BUYER MODE
+    // =========================================================================
+    private JPanel createBuyerPanel() {
+        JPanel buyerPanel = new JPanel(new BorderLayout(10, 10));
+        buyerPanel.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+
+        // Top Toolbar: DSA Algorithms (QuickSort & Binary Search)
+        JPanel dsaToolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        dsaToolbar.setBorder(BorderFactory.createTitledBorder("Buyer Tools (DSA Algorithms)"));
+
+        JButton btnSort = new JButton("⚡ Sort by Price (QuickSort)");
+        btnSort.setBackground(new Color(225, 240, 255));
+        btnSort.addActionListener(e -> handleQuickSort());
+        dsaToolbar.add(btnSort);
+
+        dsaToolbar.add(new JLabel(" |  Max Budget: ₹"));
+        txtBudget = new JTextField(currentBuyer.getBudget() + "", 6);
+        dsaToolbar.add(txtBudget);
+
+        JButton btnBinarySearch = new JButton("🔍 Filter Budget (Binary Search)");
+        btnBinarySearch.setBackground(new Color(225, 255, 225));
+        btnBinarySearch.addActionListener(e -> handleBinarySearch());
+        dsaToolbar.add(btnBinarySearch);
+
+        JButton btnReset = new JButton("🔄 Reset List");
+        btnReset.addActionListener(e -> {
+            items = DataManager.loadItems();
+            refreshBuyerTable(items);
+            lblStatus.setText("Displaying all available items.");
+        });
+        dsaToolbar.add(btnReset);
+
+        buyerPanel.add(dsaToolbar, BorderLayout.NORTH);
+
+        // Center Table: Available Items
+        buyerTableModel = createNonEditableModel();
+        buyerTable = new JTable(buyerTableModel);
+        setupTableColumns(buyerTable);
+        buyerPanel.add(new JScrollPane(buyerTable), BorderLayout.CENTER);
+
+        // Bottom Actions for Buyer
+        JPanel buyerBottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
+
+        JButton btnBuyerProfile = new JButton("👤 View Buyer Profile (OOP Polymorphism)");
+        btnBuyerProfile.addActionListener(e -> showProfileDialog(currentBuyer));
+        buyerBottom.add(btnBuyerProfile);
+
+        JButton btnBuy = new JButton("🛒 Buy Selected Item");
+        btnBuy.setFont(new Font("Arial", Font.BOLD, 12));
+        btnBuy.setBackground(new Color(200, 240, 200));
+        btnBuy.addActionListener(e -> handleBuySelectedItem());
+        buyerBottom.add(btnBuy);
+
+        buyerPanel.add(buyerBottom, BorderLayout.SOUTH);
+
+        return buyerPanel;
+    }
+
+    // =========================================================================
+    // TAB 2: SELLER MODE
+    // =========================================================================
+    private JPanel createSellerPanel() {
+        JPanel sellerPanel = new JPanel(new BorderLayout(10, 10));
+        sellerPanel.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+
+        // Top: Form to Post New Items
+        JPanel formPanel = new JPanel(new GridLayout(2, 6, 8, 8));
+        formPanel.setBorder(BorderFactory.createTitledBorder("Post a New Campus Item for Sale"));
+
+        txtTitle = new JTextField();
+        txtCategory = new JTextField();
+        txtPrice = new JTextField();
+        txtDesc = new JTextField();
+        txtSellerName = new JTextField(currentSeller.getName());
+        txtSellerPhone = new JTextField(currentSeller.getPhone());
+
+        formPanel.add(new JLabel("Item Title:"));
+        formPanel.add(new JLabel("Category:"));
+        formPanel.add(new JLabel("Price (₹):"));
+        formPanel.add(new JLabel("Short Description:"));
+        formPanel.add(new JLabel("Your Name:"));
+        formPanel.add(new JLabel("Contact Phone:"));
+
+        formPanel.add(txtTitle);
+        formPanel.add(txtCategory);
+        formPanel.add(txtPrice);
+        formPanel.add(txtDesc);
+        formPanel.add(txtSellerName);
+        formPanel.add(txtPhoneAndButton(txtSellerPhone));
+
+        sellerPanel.add(formPanel, BorderLayout.NORTH);
+
+        // Center Table: Shows All Items / My Listings
+        sellerTableModel = createNonEditableModel();
+        sellerTable = new JTable(sellerTableModel);
+        setupTableColumns(sellerTable);
+        sellerPanel.add(new JScrollPane(sellerTable), BorderLayout.CENTER);
+
+        // Bottom Actions for Seller
+        JPanel sellerBottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
+
+        JButton btnSellerProfile = new JButton("👤 View Seller Profile (OOP Polymorphism)");
+        btnSellerProfile.addActionListener(e -> showProfileDialog(currentSeller));
+        sellerBottom.add(btnSellerProfile);
+
+        JButton btnMarkSold = new JButton("✅ Mark Selected Item as SOLD");
+        btnMarkSold.setFont(new Font("Arial", Font.BOLD, 12));
+        btnMarkSold.addActionListener(e -> handleMarkItemAsSold());
+        sellerBottom.add(btnMarkSold);
+
+        sellerPanel.add(sellerBottom, BorderLayout.SOUTH);
+
+        return sellerPanel;
+    }
+
+    private JPanel txtPhoneAndButton(JTextField phoneField) {
+        JPanel p = new JPanel(new BorderLayout(5, 0));
+        p.add(phoneField, BorderLayout.CENTER);
+        JButton btnSubmit = new JButton("➕ Post");
+        btnSubmit.setFont(new Font("Arial", Font.BOLD, 11));
+        btnSubmit.addActionListener(e -> handlePostItem());
+        p.add(btnSubmit, BorderLayout.EAST);
+        return p;
+    }
+
+    // -------------------------------------------------------------------------
+    // DSA ACTIONS (BUYER)
+    // -------------------------------------------------------------------------
     private void handleQuickSort() {
-        if (currentItems.isEmpty()) {
-            lblStatus.setText("No items to sort.");
+        ArrayList<Item> availableItems = getAvailableItemsList();
+        if (availableItems.isEmpty()) {
+            lblStatus.setText("No available items to sort.");
             return;
         }
 
-        // Apply custom QuickSort from scratch!
-        QuickSort.sort(currentItems, 0, currentItems.size() - 1);
-
-        displayItemsInTable(currentItems);
+        // Apply QuickSort algorithm from scratch
+        QuickSort.sort(availableItems, 0, availableItems.size() - 1);
+        refreshBuyerTable(availableItems);
         lblStatus.setText("⚡ QuickSort executed: Items sorted by price (Low to High) in O(N log N)!");
     }
 
-    // DSA 2: Binary Search (Filter items within student budget)
     private void handleBinarySearch() {
         String input = txtBudget.getText().trim();
         if (input.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please enter a maximum budget amount (₹).", "Missing Budget", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Please enter a budget amount (₹).", "Missing Budget", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        double budget;
         try {
-            budget = Double.parseDouble(input);
-            if (budget <= 0) {
-                JOptionPane.showMessageDialog(this, "Budget must be greater than 0.", "Invalid Budget", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+            double budget = Double.parseDouble(input);
+            currentBuyer.setBudget(budget);
+
+            ArrayList<Item> availableItems = getAvailableItemsList();
+            QuickSort.sort(availableItems, 0, availableItems.size() - 1);
+
+            // Apply BinarySearch algorithm from scratch
+            ArrayList<Item> affordable = BinarySearch.searchByBudget(availableItems, budget);
+            refreshBuyerTable(affordable);
+            lblStatus.setText(String.format("🔍 Binary Search: Located %d item(s) within ₹%.2f budget in O(log N)!", affordable.size(), budget));
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Please enter a valid numeric budget.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        // Step 1: Ensure items are sorted by price using QuickSort
-        QuickSort.sort(currentItems, 0, currentItems.size() - 1);
-
-        // Step 2: Use BinarySearch to find all affordable items in O(log N)
-        ArrayList<Item> affordable = BinarySearch.searchByBudget(currentItems, budget);
-
-        displayItemsInTable(affordable);
-        lblStatus.setText(String.format("🔍 Binary Search: Located %d affordable item(s) for ₹%.2f budget in O(log N)!", affordable.size(), budget));
-    }
-
-    // Seller: Post New Item Dialog
-    private void handlePostItemDialog() {
-        JTextField txtTitle = new JTextField();
-        JTextField txtCategory = new JTextField();
-        JTextField txtPrice = new JTextField();
-        JTextField txtDesc = new JTextField();
-        JTextField txtSeller = new JTextField();
-        JTextField txtPhone = new JTextField();
-
-        Object[] form = {
-                "Item Title (e.g. Casio fx-991EX):", txtTitle,
-                "Category (e.g. Book, Electronics, Cycle):", txtCategory,
-                "Price (₹):", txtPrice,
-                "Description:", txtDesc,
-                "Your Name:", txtSeller,
-                "Phone Number:", txtPhone
-        };
-
-        int result = JOptionPane.showConfirmDialog(this, form, "Post New Campus Item", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-
-        if (result == JOptionPane.OK_OPTION) {
-            String title = txtTitle.getText().trim();
-            String category = txtCategory.getText().trim();
-            String priceStr = txtPrice.getText().trim();
-            String desc = txtDesc.getText().trim();
-            String seller = txtSeller.getText().trim();
-            String phone = txtPhone.getText().trim();
-
-            if (title.isEmpty() || category.isEmpty() || priceStr.isEmpty() || seller.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Please fill in all required fields.", "Incomplete Form", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-
-            double price;
-            try {
-                price = Double.parseDouble(priceStr);
-                if (price <= 0) throw new NumberFormatException();
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Please enter a valid price greater than 0.", "Invalid Price", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            // Generate new ID and save
-            int newId = DataManager.getNextItemId(currentItems);
-            Item newItem = new Item(newId, title, category, price, desc, seller, phone);
-
-            currentItems.add(newItem);
-            DataManager.saveItems(currentItems);
-
-            displayItemsInTable(currentItems);
-            lblStatus.setText("🎉 Posted item [" + newId + "] " + title + " successfully and saved to JSON!");
+            JOptionPane.showMessageDialog(this, "Please enter a valid numeric budget.", "Invalid Number", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    // Buyer: Buy / Mark selected item as SOLD
     private void handleBuySelectedItem() {
-        int selectedRow = itemTable.getSelectedRow();
-        if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Please select an item from the table first.", "No Selection", JOptionPane.INFORMATION_MESSAGE);
+        int row = buyerTable.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Please select an item from the table first.", "Select Item", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
 
-        int itemId = (int) tableModel.getValueAt(selectedRow, 0);
+        int itemId = (int) buyerTableModel.getValueAt(row, 0);
+        Item item = findItemById(itemId);
 
-        // Find item in currentItems
-        for (Item item : currentItems) {
-            if (item.getId() == itemId) {
-                if (item.isSold()) {
-                    JOptionPane.showMessageDialog(this, "This item is already marked as SOLD.", "Already Sold", JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-
-                int confirm = JOptionPane.showConfirmDialog(
-                        this,
-                        "Are you sure you want to purchase '" + item.getTitle() + "' for ₹" + item.getPrice() + "?\nSeller: " + item.getSellerName() + " (" + item.getSellerPhone() + ")",
-                        "Confirm Purchase",
-                        JOptionPane.YES_NO_OPTION
-                );
-
-                if (confirm == JOptionPane.YES_OPTION) {
-                    item.setSold(true);
-                    DataManager.saveItems(currentItems); // Persist update to JSON
-                    displayItemsInTable(currentItems);
-                    lblStatus.setText("🎉 Item [" + itemId + "] marked as SOLD! Contact seller: " + item.getSellerPhone());
-                }
+        if (item != null) {
+            if (item.isSold()) {
+                JOptionPane.showMessageDialog(this, "This item is already sold.", "Sold Out", JOptionPane.WARNING_MESSAGE);
                 return;
+            }
+
+            int confirm = JOptionPane.showConfirmDialog(this,
+                    "Confirm purchase of '" + item.getTitle() + "' for ₹" + item.getPrice() + "?\nSeller: " + item.getSellerName() + " (" + item.getSellerPhone() + ")",
+                    "Purchase Item", JOptionPane.YES_NO_OPTION);
+
+            if (confirm == JOptionPane.YES_OPTION) {
+                item.setSold(true);
+                DataManager.saveItems(items); // Save update to JSON
+                refreshBuyerTable(getAvailableItemsList());
+                refreshSellerTable();
+                lblStatus.setText("🎉 Item [" + itemId + "] purchased! Contact seller: " + item.getSellerPhone());
             }
         }
     }
 
-    // Helper: Populates JTable with list of items
-    private void displayItemsInTable(ArrayList<Item> itemsToDisplay) {
-        tableModel.setRowCount(0); // Clear existing rows
+    // -------------------------------------------------------------------------
+    // SELLER ACTIONS
+    // -------------------------------------------------------------------------
+    private void handlePostItem() {
+        String title = txtTitle.getText().trim();
+        String cat = txtCategory.getText().trim();
+        String priceStr = txtPrice.getText().trim();
+        String desc = txtDesc.getText().trim();
+        String seller = txtSellerName.getText().trim();
+        String phone = txtSellerPhone.getText().trim();
 
-        for (Item item : itemsToDisplay) {
-            Object[] row = {
-                    item.getId(),
-                    item.getCategory(),
-                    item.getTitle(),
-                    String.format("%.2f", item.getPrice()),
-                    item.getDescription(),
-                    item.getSellerName(),
-                    item.getSellerPhone(),
-                    item.isSold() ? "❌ SOLD" : "✅ AVAILABLE"
-            };
-            tableModel.addRow(row);
+        if (title.isEmpty() || cat.isEmpty() || priceStr.isEmpty() || seller.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please fill in Title, Category, Price, and Name.", "Incomplete Form", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        try {
+            double price = Double.parseDouble(priceStr);
+            if (price <= 0) throw new NumberFormatException();
+
+            int newId = DataManager.getNextItemId(items);
+            Item newItem = new Item(newId, title, cat, price, desc, seller, phone);
+
+            items.add(newItem);
+            currentSeller.incrementItemsListed();
+            DataManager.saveItems(items); // Save to JSON file
+
+            // Clear inputs
+            txtTitle.setText("");
+            txtCategory.setText("");
+            txtPrice.setText("");
+            txtDesc.setText("");
+
+            refreshBuyerTable(getAvailableItemsList());
+            refreshSellerTable();
+            lblStatus.setText("🎉 Item [" + newId + "] posted successfully and saved to items.json!");
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Please enter a valid price greater than 0.", "Invalid Price", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    // Main entry point for standalone GUI launch
+    private void handleMarkItemAsSold() {
+        int row = sellerTable.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Please select an item from the table first.", "Select Item", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        int itemId = (int) sellerTableModel.getValueAt(row, 0);
+        Item item = findItemById(itemId);
+
+        if (item != null) {
+            item.setSold(true);
+            DataManager.saveItems(items); // Persist to JSON
+            refreshBuyerTable(getAvailableItemsList());
+            refreshSellerTable();
+            lblStatus.setText("✅ Item [" + itemId + "] has been marked as SOLD.");
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // OOP POLYMORPHISM DEMO DIALOG
+    // -------------------------------------------------------------------------
+    private void showProfileDialog(User user) {
+        // Method overriding demo: Buyer displays budget, Seller displays listed items count
+        String profileText = String.format(
+                "Role        : %s\nName        : %s\nPhone       : %s\nHostel      : %s\n",
+                user.getRole(), user.getName(), user.getPhone(), user.getHostel()
+        );
+
+        if (user instanceof Buyer b) {
+            profileText += "Max Budget  : ₹" + b.getBudget() + "\n(Class: Buyer extends User)";
+        } else if (user instanceof Seller s) {
+            profileText += "Items Listed: " + s.getItemsListed() + "\n(Class: Seller extends User)";
+        }
+
+        JOptionPane.showMessageDialog(this, profileText, "User Profile (OOP Polymorphism)", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    // -------------------------------------------------------------------------
+    // TABLE HELPERS
+    // -------------------------------------------------------------------------
+    private DefaultTableModel createNonEditableModel() {
+        String[] columns = {"ID", "Category", "Title", "Price (₹)", "Description", "Seller", "Phone", "Status"};
+        return new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int col) {
+                return false;
+            }
+        };
+    }
+
+    private void setupTableColumns(JTable table) {
+        table.setRowHeight(24);
+        table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
+        table.getColumnModel().getColumn(0).setPreferredWidth(45);  // ID
+        table.getColumnModel().getColumn(1).setPreferredWidth(85);  // Category
+        table.getColumnModel().getColumn(2).setPreferredWidth(170); // Title
+        table.getColumnModel().getColumn(3).setPreferredWidth(75);  // Price
+        table.getColumnModel().getColumn(4).setPreferredWidth(180); // Description
+        table.getColumnModel().getColumn(5).setPreferredWidth(95);  // Seller
+        table.getColumnModel().getColumn(6).setPreferredWidth(95);  // Phone
+        table.getColumnModel().getColumn(7).setPreferredWidth(85);  // Status
+    }
+
+    private void refreshBuyerTable(ArrayList<Item> listToDisplay) {
+        buyerTableModel.setRowCount(0);
+        for (Item item : listToDisplay) {
+            if (!item.isSold()) {
+                buyerTableModel.addRow(new Object[]{
+                        item.getId(), item.getCategory(), item.getTitle(),
+                        String.format("%.2f", item.getPrice()),
+                        item.getDescription(), item.getSellerName(),
+                        item.getSellerPhone(), "AVAILABLE"
+                });
+            }
+        }
+    }
+
+    private void refreshSellerTable() {
+        sellerTableModel.setRowCount(0);
+        for (Item item : items) {
+            sellerTableModel.addRow(new Object[]{
+                    item.getId(), item.getCategory(), item.getTitle(),
+                    String.format("%.2f", item.getPrice()),
+                    item.getDescription(), item.getSellerName(),
+                    item.getSellerPhone(), item.isSold() ? "❌ SOLD" : "✅ AVAILABLE"
+            });
+        }
+    }
+
+    private ArrayList<Item> getAvailableItemsList() {
+        ArrayList<Item> available = new ArrayList<>();
+        for (Item item : items) {
+            if (!item.isSold()) {
+                available.add(item);
+            }
+        }
+        return available;
+    }
+
+    private Item findItemById(int id) {
+        for (Item item : items) {
+            if (item.getId() == id) {
+                return item;
+            }
+        }
+        return null;
+    }
+
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            CampusOLXGUI gui = new CampusOLXGUI();
-            gui.setVisible(true);
-        });
+        SwingUtilities.invokeLater(() -> new CampusOLXGUI().setVisible(true));
     }
 }
