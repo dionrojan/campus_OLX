@@ -15,15 +15,42 @@ public class Main {
         items = DataManager.loadItems();
 
         System.out.println("╔══════════════════════════════════════════════════════════╗");
-        System.out.println("║                🎓 CAMPUS OLX (COLLEGE CLI)               ║");
+        System.out.println("║                🎓 CAMPUS OLX (COLLEGE APP)               ║");
         System.out.println("║         Simple DSA (QuickSort & Binary Search) + OOPs    ║");
         System.out.println("╚══════════════════════════════════════════════════════════╝");
 
         while (true) {
-            System.out.println("\n--- SELECT YOUR ROLE ---");
+            System.out.println("\n--- SELECT MODE ---");
+            System.out.println("1. Launch Graphical User Interface (Swing GUI Window)");
+            System.out.println("2. Run in Terminal (CLI Mode)");
+            System.out.println("3. Exit");
+            System.out.print("Enter your choice (1-3): ");
+
+            int mode = readInt();
+            if (mode == 1) {
+                System.out.println("🚀 Launching Campus OLX Swing GUI Window...");
+                javax.swing.SwingUtilities.invokeLater(() -> {
+                    CampusOLXGUI gui = new CampusOLXGUI();
+                    gui.setVisible(true);
+                });
+            } else if (mode == 2) {
+                runCLIMode();
+            } else if (mode == 3) {
+                System.out.println("\nThank you for using Campus OLX! Goodbye 👋");
+                System.exit(0);
+            } else {
+                System.out.println("⚠️  Invalid choice. Please enter 1, 2, or 3.");
+            }
+        }
+    }
+
+    private static void runCLIMode() {
+        boolean inCLI = true;
+        while (inCLI) {
+            System.out.println("\n--- SELECT YOUR ROLE (CLI) ---");
             System.out.println("1. I am a Buyer (Search, Browse & Buy Items)");
             System.out.println("2. I am a Seller (List & Sell Items)");
-            System.out.println("3. Exit");
+            System.out.println("3. Back to Mode Selection");
             System.out.print("Enter your choice (1-3): ");
 
             int choice = readInt();
@@ -31,10 +58,7 @@ public class Main {
             switch (choice) {
                 case 1 -> runBuyerMenu();
                 case 2 -> runSellerMenu();
-                case 3 -> {
-                    System.out.println("\nThank you for using Campus OLX! Goodbye 👋");
-                    System.exit(0);
-                }
+                case 3 -> inCLI = false;
                 default -> System.out.println("⚠️  Invalid choice. Please enter 1, 2, or 3.");
             }
         }
