@@ -4,7 +4,12 @@ import java.util.ArrayList;
 
 /**
  * Standard QuickSort algorithm (Divide and Conquer).
- * Sorts an ArrayList of Items by Price in ascending order.
+ * Built from scratch for Campus OLX.
+ *
+ * Supports:
+ * 1. Sorting by Price (Ascending - Low to High)
+ * 2. Sorting by Price (Descending - High to Low)
+ * 3. Sorting by Item ID (for Binary Search lookup)
  *
  * Time Complexity:
  * - Average Case: O(N log N)
@@ -12,40 +17,76 @@ import java.util.ArrayList;
  */
 public class QuickSort {
 
-    // Main sorting method called from outside
+    // 1. Sort by Price Ascending (Low to High)
     public static void sort(ArrayList<Item> list, int low, int high) {
         if (low < high) {
-            // Find pivot index such that elements left of pivot are smaller,
-            // and elements right of pivot are larger
-            int pivotIndex = partition(list, low, high);
-
-            // Recursively sort left subarray
+            int pivotIndex = partitionAscending(list, low, high);
             sort(list, low, pivotIndex - 1);
-
-            // Recursively sort right subarray
             sort(list, pivotIndex + 1, high);
         }
     }
 
-    // Standard Lomuto Partition function (takes last element as pivot)
-    private static int partition(ArrayList<Item> list, int low, int high) {
+    private static int partitionAscending(ArrayList<Item> list, int low, int high) {
         double pivotPrice = list.get(high).getPrice();
-        int i = low - 1; // Index of smaller element
+        int i = low - 1;
 
         for (int j = low; j < high; j++) {
-            // If current item's price is less than or equal to pivot price
             if (list.get(j).getPrice() <= pivotPrice) {
                 i++;
                 swap(list, i, j);
             }
         }
-
-        // Place the pivot element in its correct sorted position
         swap(list, i + 1, high);
         return i + 1;
     }
 
-    // Helper method to swap two items in the ArrayList
+    // 2. Sort by Price Descending (High to Low)
+    public static void sortDescending(ArrayList<Item> list, int low, int high) {
+        if (low < high) {
+            int pivotIndex = partitionDescending(list, low, high);
+            sortDescending(list, low, pivotIndex - 1);
+            sortDescending(list, pivotIndex + 1, high);
+        }
+    }
+
+    private static int partitionDescending(ArrayList<Item> list, int low, int high) {
+        double pivotPrice = list.get(high).getPrice();
+        int i = low - 1;
+
+        for (int j = low; j < high; j++) {
+            if (list.get(j).getPrice() >= pivotPrice) {
+                i++;
+                swap(list, i, j);
+            }
+        }
+        swap(list, i + 1, high);
+        return i + 1;
+    }
+
+    // 3. Sort by Item ID (to prepare list for BinarySearch.searchById)
+    public static void sortById(ArrayList<Item> list, int low, int high) {
+        if (low < high) {
+            int pivotIndex = partitionById(list, low, high);
+            sortById(list, low, pivotIndex - 1);
+            sortById(list, pivotIndex + 1, high);
+        }
+    }
+
+    private static int partitionById(ArrayList<Item> list, int low, int high) {
+        int pivotId = list.get(high).getId();
+        int i = low - 1;
+
+        for (int j = low; j < high; j++) {
+            if (list.get(j).getId() <= pivotId) {
+                i++;
+                swap(list, i, j);
+            }
+        }
+        swap(list, i + 1, high);
+        return i + 1;
+    }
+
+    // Helper method to swap two items
     private static void swap(ArrayList<Item> list, int i, int j) {
         Item temp = list.get(i);
         list.set(i, list.get(j));
