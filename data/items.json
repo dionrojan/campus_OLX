@@ -37,7 +37,7 @@
     "description": "First year textbook, clean pages with formula bookmark.",
     "sellerName": "Priya Patel",
     "sellerPhone": "9123456780",
-    "isSold": false
+    "isSold": true
   },
   {
     "id": 105,
@@ -47,7 +47,7 @@
     "description": "Hostel essential for late-night ramen and coffee.",
     "sellerName": "Priya Patel",
     "sellerPhone": "9123456780",
-    "isSold": false
+    "isSold": true
   },
   {
     "id": 106,
@@ -78,5 +78,15 @@
     "sellerName": "dion",
     "sellerPhone": "8921",
     "isSold": true
+  },
+  {
+    "id": 109,
+    "title": "Silent patinet",
+    "category": "Books",
+    "price": 120.0,
+    "description": "well maintained",
+    "sellerName": "irine",
+    "sellerPhone": "9112233445",
+    "isSold": false
   }
 ]
