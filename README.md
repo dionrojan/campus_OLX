@@ -15,7 +15,8 @@ DSA_OOPS_project/
 ├── data/
 │   └── items.json      # File where all item details are saved
 └── src/com/campusolx/
-    ├── Main.java         # Main menu (Buyer & Seller loops)
+    ├── Main.java         # Main launcher (Choose between GUI or CLI mode)
+    ├── CampusOLXGUI.java # Java Swing Graphical Desktop Window
     ├── User.java         # Base User class (Encapsulation)
     ├── Buyer.java        # Inherits from User (Inheritance)
     ├── Seller.java       # Inherits from User (Inheritance)
