@@ -24,3 +24,5 @@ hs_err_pid*
 
 # Note: The 'lib/' directory containing gson.jar and 'data/items.json' 
 # are intentionally NOT ignored so your teammates have working libraries and starter data.
+
+explanation/

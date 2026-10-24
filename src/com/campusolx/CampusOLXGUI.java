@@ -45,7 +45,6 @@ public class CampusOLXGUI extends JFrame implements ActionListener {
 
     // General Components
     private JTabbedPane tabbedPane;
-    private JLabel lblStatus;
 
     public CampusOLXGUI() {
         // Load initial data from items.json
@@ -71,17 +70,7 @@ public class CampusOLXGUI extends JFrame implements ActionListener {
         tabbedPane.setFont(new Font("Arial", Font.BOLD, 13));
         tabbedPane.addTab("🛒 Buyer Mode (Browse, Search & Buy)", createBuyerPanel());
         tabbedPane.addTab("🏷️ Seller Mode (Post & Manage Listings)", createSellerPanel());
-        tabbedPane.addChangeListener(e -> {
-            int selected = tabbedPane.getSelectedIndex();
-            lblStatus.setText("Switched to " + (selected == 0 ? "Buyer Mode" : "Seller Mode"));
-        });
         add(tabbedPane, BorderLayout.CENTER);
-
-        // 3. Status Bar at the bottom
-        lblStatus = new JLabel(" Ready. Switch between Buyer and Seller tabs anytime!");
-        lblStatus.setFont(new Font("Arial", Font.ITALIC, 12));
-        lblStatus.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
-        add(lblStatus, BorderLayout.SOUTH);
 
         // Initial Data Load into tables
         refreshBuyerTable(items);
@@ -235,7 +224,6 @@ public class CampusOLXGUI extends JFrame implements ActionListener {
         } else if (e.getSource() == btnReset) {
             items = DataManager.loadItems();
             refreshBuyerTable(items);
-            lblStatus.setText("Displaying all available items.");
         } else if (e.getSource() == btnBuyerProfile) {
             showProfileDialog(currentBuyer);
         } else if (e.getSource() == btnBuy) {
@@ -255,14 +243,13 @@ public class CampusOLXGUI extends JFrame implements ActionListener {
     private void handleQuickSort() {
         ArrayList<Item> availableItems = getAvailableItemsList();
         if (availableItems.isEmpty()) {
-            lblStatus.setText("No available items to sort.");
+            JOptionPane.showMessageDialog(this, "No available items to sort.", "Empty List", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
 
         // Apply QuickSort algorithm from scratch
         QuickSort.sort(availableItems, 0, availableItems.size() - 1);
         refreshBuyerTable(availableItems);
-        lblStatus.setText("⚡ QuickSort executed: Items sorted by price (Low to High) in O(N log N)!");
     }
 
     private void handleBinarySearch() {
@@ -282,7 +269,6 @@ public class CampusOLXGUI extends JFrame implements ActionListener {
             // Apply BinarySearch algorithm from scratch
             ArrayList<Item> affordable = BinarySearch.searchByBudget(availableItems, budget);
             refreshBuyerTable(affordable);
-            lblStatus.setText(String.format("🔍 Binary Search: Located %d item(s) within ₹%.2f budget in O(log N)!", affordable.size(), budget));
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Please enter a valid numeric budget.", "Invalid Number", JOptionPane.ERROR_MESSAGE);
         }
@@ -313,7 +299,7 @@ public class CampusOLXGUI extends JFrame implements ActionListener {
                 DataManager.saveItems(items); // Save update to JSON
                 refreshBuyerTable(getAvailableItemsList());
                 refreshSellerTable();
-                lblStatus.setText("🎉 Item [" + itemId + "] purchased! Contact seller: " + item.getSellerPhone());
+                JOptionPane.showMessageDialog(this, "🎉 Item [" + itemId + "] purchased!\nContact seller: " + item.getSellerPhone(), "Purchase Successful", JOptionPane.INFORMATION_MESSAGE);
             }
         }
     }
@@ -353,7 +339,7 @@ public class CampusOLXGUI extends JFrame implements ActionListener {
 
             refreshBuyerTable(getAvailableItemsList());
             refreshSellerTable();
-            lblStatus.setText("🎉 Item [" + newId + "] posted successfully and saved to items.json!");
+            JOptionPane.showMessageDialog(this, "🎉 Item [" + newId + "] posted successfully and saved to items.json!", "Item Posted", JOptionPane.INFORMATION_MESSAGE);
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Please enter a valid price greater than 0.", "Invalid Price", JOptionPane.ERROR_MESSAGE);
         }
@@ -374,7 +360,7 @@ public class CampusOLXGUI extends JFrame implements ActionListener {
             DataManager.saveItems(items); // Persist to JSON
             refreshBuyerTable(getAvailableItemsList());
             refreshSellerTable();
-            lblStatus.setText("✅ Item [" + itemId + "] has been marked as SOLD.");
+            JOptionPane.showMessageDialog(this, "✅ Item [" + itemId + "] has been marked as SOLD.", "Item Sold", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
