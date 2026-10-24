@@ -3,33 +3,45 @@ package com.campusolx;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 /**
- * Enhanced Graphical User Interface (GUI) with distinct Buyer and Seller modes.
+ * Graphical User Interface (GUI) for Campus OLX.
  *
- * Demonstrates:
- * 1. Inheritance  : Extends JFrame.
- * 2. Encapsulation: Private UI components and methods.
- * 3. Polymorphism : Buyer and Seller displayInfo() profiles triggered via GUI buttons.
- * 4. JTabbedPane  : Clean switching between Buyer and Seller roles.
+ * OOP Concepts Demonstrated:
+ * 1. Inheritance  : Extends JFrame (is-a window).
+ * 2. Polymorphism : Implements ActionListener (interface implementation),
+ *                   and polymorphic displayInfo() for Buyer/Seller profiles.
+ * 3. Encapsulation: Private UI controls and helper methods.
  */
-public class CampusOLXGUI extends JFrame {
+public class CampusOLXGUI extends JFrame implements ActionListener {
 
     // In-memory data list
     private ArrayList<Item> items;
 
-    // Buyer Components
+    // Active User Models
+    private Buyer currentBuyer;
+    private Seller currentSeller;
+
+    // Buyer UI Components
     private JTable buyerTable;
     private DefaultTableModel buyerTableModel;
     private JTextField txtBudget;
-    private Buyer currentBuyer;
+    private JButton btnSort;
+    private JButton btnBinarySearch;
+    private JButton btnReset;
+    private JButton btnBuyerProfile;
+    private JButton btnBuy;
 
-    // Seller Components
+    // Seller UI Components
     private JTable sellerTable;
     private DefaultTableModel sellerTableModel;
     private JTextField txtTitle, txtCategory, txtPrice, txtDesc, txtSellerName, txtSellerPhone;
-    private Seller currentSeller;
+    private JButton btnPost;
+    private JButton btnSellerProfile;
+    private JButton btnMarkSold;
 
     // General Components
     private JTabbedPane tabbedPane;
@@ -51,7 +63,7 @@ public class CampusOLXGUI extends JFrame {
         setLocationRelativeTo(null); // Center on screen
         setLayout(new BorderLayout(5, 5));
 
-        // 1. Header with Role Switcher
+        // 1. Header Banner
         add(createHeaderPanel(), BorderLayout.NORTH);
 
         // 2. Tabbed Pane (Buyer Mode vs Seller Mode)
@@ -71,7 +83,7 @@ public class CampusOLXGUI extends JFrame {
         lblStatus.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
         add(lblStatus, BorderLayout.SOUTH);
 
-        // Initial Data Load
+        // Initial Data Load into tables
         refreshBuyerTable(items);
         refreshSellerTable();
     }
@@ -102,26 +114,22 @@ public class CampusOLXGUI extends JFrame {
         JPanel dsaToolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         dsaToolbar.setBorder(BorderFactory.createTitledBorder("Buyer Tools (DSA Algorithms)"));
 
-        JButton btnSort = new JButton("⚡ Sort by Price (QuickSort)");
+        btnSort = new JButton("⚡ Sort by Price (QuickSort)");
         btnSort.setBackground(new Color(225, 240, 255));
-        btnSort.addActionListener(e -> handleQuickSort());
+        btnSort.addActionListener(this); // Registered to this ActionListener
         dsaToolbar.add(btnSort);
 
         dsaToolbar.add(new JLabel(" |  Max Budget: ₹"));
         txtBudget = new JTextField(currentBuyer.getBudget() + "", 6);
         dsaToolbar.add(txtBudget);
 
-        JButton btnBinarySearch = new JButton("🔍 Filter Budget (Binary Search)");
+        btnBinarySearch = new JButton("🔍 Filter Budget (Binary Search)");
         btnBinarySearch.setBackground(new Color(225, 255, 225));
-        btnBinarySearch.addActionListener(e -> handleBinarySearch());
+        btnBinarySearch.addActionListener(this); // Registered to this ActionListener
         dsaToolbar.add(btnBinarySearch);
 
-        JButton btnReset = new JButton("🔄 Reset List");
-        btnReset.addActionListener(e -> {
-            items = DataManager.loadItems();
-            refreshBuyerTable(items);
-            lblStatus.setText("Displaying all available items.");
-        });
+        btnReset = new JButton("🔄 Reset List");
+        btnReset.addActionListener(this); // Registered to this ActionListener
         dsaToolbar.add(btnReset);
 
         buyerPanel.add(dsaToolbar, BorderLayout.NORTH);
@@ -135,14 +143,14 @@ public class CampusOLXGUI extends JFrame {
         // Bottom Actions for Buyer
         JPanel buyerBottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
 
-        JButton btnBuyerProfile = new JButton("👤 View Buyer Profile (OOP Polymorphism)");
-        btnBuyerProfile.addActionListener(e -> showProfileDialog(currentBuyer));
+        btnBuyerProfile = new JButton("👤 View Buyer Profile (OOP Polymorphism)");
+        btnBuyerProfile.addActionListener(this); // Registered to this ActionListener
         buyerBottom.add(btnBuyerProfile);
 
-        JButton btnBuy = new JButton("🛒 Buy Selected Item");
+        btnBuy = new JButton("🛒 Buy Selected Item");
         btnBuy.setFont(new Font("Arial", Font.BOLD, 12));
         btnBuy.setBackground(new Color(200, 240, 200));
-        btnBuy.addActionListener(e -> handleBuySelectedItem());
+        btnBuy.addActionListener(this); // Registered to this ActionListener
         buyerBottom.add(btnBuy);
 
         buyerPanel.add(buyerBottom, BorderLayout.SOUTH);
@@ -180,7 +188,15 @@ public class CampusOLXGUI extends JFrame {
         formPanel.add(txtPrice);
         formPanel.add(txtDesc);
         formPanel.add(txtSellerName);
-        formPanel.add(txtPhoneAndButton(txtSellerPhone));
+
+        // Phone field with Post button
+        JPanel p = new JPanel(new BorderLayout(5, 0));
+        p.add(txtSellerPhone, BorderLayout.CENTER);
+        btnPost = new JButton("➕ Post");
+        btnPost.setFont(new Font("Arial", Font.BOLD, 11));
+        btnPost.addActionListener(this); // Registered to this ActionListener
+        p.add(btnPost, BorderLayout.EAST);
+        formPanel.add(p);
 
         sellerPanel.add(formPanel, BorderLayout.NORTH);
 
@@ -193,13 +209,13 @@ public class CampusOLXGUI extends JFrame {
         // Bottom Actions for Seller
         JPanel sellerBottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
 
-        JButton btnSellerProfile = new JButton("👤 View Seller Profile (OOP Polymorphism)");
-        btnSellerProfile.addActionListener(e -> showProfileDialog(currentSeller));
+        btnSellerProfile = new JButton("👤 View Seller Profile (OOP Polymorphism)");
+        btnSellerProfile.addActionListener(this); // Registered to this ActionListener
         sellerBottom.add(btnSellerProfile);
 
-        JButton btnMarkSold = new JButton("✅ Mark Selected Item as SOLD");
+        btnMarkSold = new JButton("✅ Mark Selected Item as SOLD");
         btnMarkSold.setFont(new Font("Arial", Font.BOLD, 12));
-        btnMarkSold.addActionListener(e -> handleMarkItemAsSold());
+        btnMarkSold.addActionListener(this); // Registered to this ActionListener
         sellerBottom.add(btnMarkSold);
 
         sellerPanel.add(sellerBottom, BorderLayout.SOUTH);
@@ -207,14 +223,30 @@ public class CampusOLXGUI extends JFrame {
         return sellerPanel;
     }
 
-    private JPanel txtPhoneAndButton(JTextField phoneField) {
-        JPanel p = new JPanel(new BorderLayout(5, 0));
-        p.add(phoneField, BorderLayout.CENTER);
-        JButton btnSubmit = new JButton("➕ Post");
-        btnSubmit.setFont(new Font("Arial", Font.BOLD, 11));
-        btnSubmit.addActionListener(e -> handlePostItem());
-        p.add(btnSubmit, BorderLayout.EAST);
-        return p;
+    // =========================================================================
+    // CENTRALIZED ACTIONPERFORMED METHOD (TEACHER'S LAB STYLE)
+    // =========================================================================
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == btnSort) {
+            handleQuickSort();
+        } else if (e.getSource() == btnBinarySearch) {
+            handleBinarySearch();
+        } else if (e.getSource() == btnReset) {
+            items = DataManager.loadItems();
+            refreshBuyerTable(items);
+            lblStatus.setText("Displaying all available items.");
+        } else if (e.getSource() == btnBuyerProfile) {
+            showProfileDialog(currentBuyer);
+        } else if (e.getSource() == btnBuy) {
+            handleBuySelectedItem();
+        } else if (e.getSource() == btnPost) {
+            handlePostItem();
+        } else if (e.getSource() == btnSellerProfile) {
+            showProfileDialog(currentSeller);
+        } else if (e.getSource() == btnMarkSold) {
+            handleMarkItemAsSold();
+        }
     }
 
     // -------------------------------------------------------------------------
